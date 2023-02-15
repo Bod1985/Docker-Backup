@@ -18,14 +18,15 @@ for container in running_containers:
         client.stop(container['Id'])
         stopped_containers.append(container)
 
-for f in os.scandir('/source'):
-    if f.is_dir():
+for f in os.listdir('/source'):
+    d = os.path.join('/source',f)
+    if os.path.isdir(d):
         print('Creating tar files in temp dir')
-        process = Popen([f'tar czf /config/temp/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
+        process = Popen([f'tar czf /config/temp/{f}.tar.gz /source/{d}'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
         print(stdout)
 
-for f in os.scandir('/config/temp'):
+for f in os.listdir('/config/temp'):
     print('Copying tar files to dest')
     process = Popen([f'cp -r /temp/{f} /dest'], stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
