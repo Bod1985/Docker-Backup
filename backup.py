@@ -1,7 +1,10 @@
 #!/bin/python3
 
+'''Module providing terminal process creation.'''
+import os
 from subprocess import Popen, PIPE
-import docker, os
+import docker
+
 
 ignore_list = ['docker-backup','portainer']
 stopped_containers = []
@@ -14,7 +17,7 @@ for container in running_containers:
         print(f'Stopping {container["Names"][0].strip("/")}')
         client.stop(container['Id'])
         stopped_containers.append(container)
-        
+
 for f in os.scandir('/source'):
     if f.is_dir():
         print('Creating tar files in temp dir')
