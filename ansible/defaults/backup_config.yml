@@ -1,0 +1,4 @@
+---
+local:
+  enable: yes
+  destination: /opt/backup
