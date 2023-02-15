@@ -21,10 +21,10 @@ for container in running_containers:
 for f in os.listdir('/source'):
     d = os.path.join('/source',f)
     if os.path.isdir(d):
-        print('Creating tar files in temp dir')
-        process = Popen([f'tar czf /dest/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
+        print('Creating tar files in dest dir')
+        process = Popen(['tar', '-zcvf', f'/dest/{f}.tar.gz', f'/source/{f}'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
-        print(stdout)
+        print(stdout, stderr)
 
 #for f in os.listdir('/config/temp'):
 #    print('Copying tar files to dest')
