@@ -5,6 +5,7 @@ services:
     restart: unless-stopped
     image: docker.io/bod1985/docker-backup:latest
     volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
       - /opt/docker-backup/:/config
       - backup_dest:/dest
       - /opt/:/source
