@@ -39,3 +39,5 @@ for f in os.listdir('/source'):
 for container in stopped_containers:
     print(f'Restarting {container["Names"][0].strip("/")}')
     client.start(container["Id"])
+
+print('BACKUP COMPLETE. Next run at BLAH')
