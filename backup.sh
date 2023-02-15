@@ -1,3 +1,3 @@
 #!/bin/bash
 
-cp -r * /source /dest
+cp -r /source/* /dest
