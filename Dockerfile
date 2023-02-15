@@ -34,7 +34,7 @@ RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | 
 CMD cron
 
 #initiate script immediately
-#CMD /opt/docker-backup/backup.sh
+CMD /opt/docker-backup/backup.sh
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
