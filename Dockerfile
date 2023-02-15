@@ -44,7 +44,7 @@ RUN crontab -l | { cat; echo "0 3 * * * python3 /opt/docker-backup/backup.py"; }
 CMD cron
 
 #initiate script immediately
-CMD python3 /opt/docker-backup/backup.py
+CMD ["python3","-u","/opt/docker-backup/backup.py"]
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
