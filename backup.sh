@@ -1,3 +1,4 @@
 #!/bin/bash
 
-cp -r /source/* /dest
+docker ps
+#cp -r /source/* /dest
