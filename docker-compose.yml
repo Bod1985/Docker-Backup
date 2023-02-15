@@ -1,0 +1,18 @@
+version: "3"
+services:
+  docker-backup:
+    container_name: docker-backup
+    restart: unless-stopped
+    image: docker.io/bod1985/docker-backup:latest
+    volumes:
+      - /opt/docker-backup/:/config
+      - backup_dest:/dest
+      - /opt/:/source
+
+volumes:
+    backup_dest:
+      driver: local
+      driver_opts:
+        type: cifs    
+        device: //<smb_ip>/<share>
+        o: "username=<user>,password=<pass>,vers=2.0,uid=1000,gid=500"
