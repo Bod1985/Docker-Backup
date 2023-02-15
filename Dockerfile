@@ -27,8 +27,8 @@ RUN apt-get -y install docker-ce docker-ce-cli
 #install Python3
 RUN apt-get install -y python3
 
-#make script executable
-RUN chmod +x /opt/docker-backup/backup.sh
+#install dependencies
+RUN pip install docker
 
 #add cron job for backup script
 RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | crontab -

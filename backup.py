@@ -1,10 +1,12 @@
 #!/bin/python3
 
 from subprocess import Popen, PIPE
+import docker
 
-process = Popen(['docker', 'ps'], stdout=PIPE, stderr=PIPE)
-stdout, stderr = process.communicate()
 
-print(f'stderr:{stderr}')
-print(f'stdout:{stdout}')
+client = docker.from_env()
+
+running_containers = client.containers.list()
+
+print(running_containers)
 #cp -r /source/* /dest
