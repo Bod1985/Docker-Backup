@@ -13,7 +13,7 @@ for container in running_containers:
     if container["Names"][0].strip("/") not in ignore_list:
         print(f'Stopping {container["Names"][0].strip("/")}')
         client.stop(container['Id'])
-        stopped_containers.add(container)
+        stopped_containers.append(container)
         
 for f in os.scandir('/source'):
     if f.is_dir():
