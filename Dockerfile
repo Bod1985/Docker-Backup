@@ -7,6 +7,9 @@ RUN mkdir /opt/docker-backup/temp
 
 RUN apt-get update
 
+#install cron
+RUN apt-get -y install cron
+
 #install docker
 RUN apt-get -y install \
     ca-certificates \
@@ -31,11 +34,8 @@ RUN apt-get install -y --no-install-recommends \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
-#install dependencies
+#install python dependencies
 RUN pip3 install docker
-
-#install cron
-RUN apt-get -y install cron
 
 #add cron job for backup script
 RUN crontab -l | { cat; echo "0 3 * * * python3 /opt/docker-backup/backup.py"; } | crontab -
