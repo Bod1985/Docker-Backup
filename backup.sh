@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ping bbc.co.uk
+cp -r * /dest
