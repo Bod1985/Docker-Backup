@@ -39,7 +39,7 @@ RUN apt-get install -y --no-install-recommends \
 RUN pip3 install docker
 
 #add cron job for backup script
-RUN crontab -l | { cat; echo "08 23 * * * python3 -u /opt/docker-backup/backup.py"; } | crontab -
+RUN crontab -l | { cat; echo "08 23 * * * python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2"; } | crontab -
 
 #initiate script immediately
 CMD ["cron", "-f"]
