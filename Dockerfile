@@ -42,7 +42,7 @@ RUN pip3 install docker
 RUN crontab -l | { cat; echo "0 3 * * * python3 -u /opt/docker-backup/backup.py"; } | crontab -
 
 #initiate script immediately
-RUN ["python3","-u","/opt/docker-backup/backup.py"]
+RUN python3 -u /opt/docker-backup/backup.py
 
 #start cron service
 CMD cron
