@@ -5,16 +5,36 @@ WORKDIR /opt/docker-backup
 ADD backup.sh /opt/docker-backup/backup.sh
 
 RUN apt-get update
+
+#install cron
 RUN apt-get -y install cron
+
+#install docker
+RUN apt-get -y install \
+    ca-certificates \
+    curl \
+    gnupg \
+    lsb-release
+RUN sudo mkdir -m 0755 -p /etc/apt/keyrings
+RUN curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+RUN echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
+  $(lsb_release -cs) stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+
+RUN apt-get update
 RUN apt-get -y install docker-ce docker-ce-cli
 
+#make script executable
 RUN chmod +x /opt/docker-backup/backup.sh
 
+#add cron job for backup script
 RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | crontab -
 
+#start cron service
 CMD cron
 
-CMD /opt/docker-backup/backup.sh
+#initiate script immediately
+#CMD /opt/docker-backup/backup.sh
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
