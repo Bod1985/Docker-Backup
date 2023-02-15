@@ -3,6 +3,7 @@ FROM debian
 WORKDIR /opt/docker-backup
 
 ADD backup.py /opt/docker-backup/backup.py
+RUN mkdir /opt/docker-backup/temp
 
 RUN apt-get update
 

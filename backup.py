@@ -1,7 +1,7 @@
 #!/bin/python3
 
 from subprocess import Popen, PIPE
-import docker
+import docker, os
 
 ignore_list = ['docker-backup','portainer']
 stopped_containers = []
@@ -15,11 +15,24 @@ for container in running_containers:
         client.stop(container['Id'])
         stopped_containers.add(container)
         
+for f in os.scandir('/source'):
+    if f.is_dir():
+        print('Creating tar files in temp dir')
+        process = Popen(['tar', 'czf', f'/config/temp/{f}.tar.gz',f'/source/{f}'], stdout=PIPE, stderr=PIPE)
+        stdout, stderr = process.communicate()
+        print(stdout)
 
-process = Popen(['cp', '-r', '/source/*', '/dest'], stdout=PIPE, stderr=PIPE)
+for f in os.scandir('/config/temp'):
+    print('Copying tar files to dest')
+    process = Popen(['cp', f'/temp/{f}','/dest'], stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    print(stdout)
+
+print('Removing temp files')
+process = Popen(['rm', '-rf', '/config/temp/*'], stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 print(stdout)
 
 for container in stopped_containers:
-    print(f'Starting {container["Names"][0].strip("/")}')
+    print(f'Restarting {container["Names"][0].strip("/")}')
     client.start(container["Id"])
