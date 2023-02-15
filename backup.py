@@ -18,27 +18,24 @@ for container in running_containers:
         client.stop(container['Id'])
         stopped_containers.append(container)
 
-process = Popen(['mkdir /config/temp'], stdout=PIPE, stderr=PIPE)
-stdout, stderr = process.communicate()
-
 for f in os.listdir('/source'):
     d = os.path.join('/source',f)
     if os.path.isdir(d):
         print('Creating tar files in temp dir')
-        process = Popen([f'tar czf /config/temp/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
+        process = Popen([f'tar czf /dest/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
         print(stdout)
 
-for f in os.listdir('/config/temp'):
-    print('Copying tar files to dest')
-    process = Popen([f'cp -r /temp/{f} /dest'], stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-    print(stdout)
+#for f in os.listdir('/config/temp'):
+#    print('Copying tar files to dest')
+#    process = Popen([f'cp -r /temp/{f} /dest'], stdout=PIPE, stderr=PIPE)
+#    stdout, stderr = process.communicate()
+#    print(stdout)
 
-print('Removing temp files')
-process = Popen(['rm -rf /config/temp/*'], stdout=PIPE, stderr=PIPE)
-stdout, stderr = process.communicate()
-print(stdout)
+#print('Removing temp files')
+#process = Popen(['rm -rf /config/temp/*'], stdout=PIPE, stderr=PIPE)
+#stdout, stderr = process.communicate()
+#print(stdout)
 
 for container in stopped_containers:
     print(f'Restarting {container["Names"][0].strip("/")}')
