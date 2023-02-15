@@ -18,6 +18,9 @@ for container in running_containers:
         client.stop(container['Id'])
         stopped_containers.append(container)
 
+process = Popen(['mkdir /config/temp'], stdout=PIPE, stderr=PIPE)
+stdout, stderr = process.communicate()
+
 for f in os.listdir('/source'):
     d = os.path.join('/source',f)
     if os.path.isdir(d):
