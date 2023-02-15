@@ -1,15 +1,18 @@
-
 FROM debian
 
 WORKDIR /opt/docker-backup
 
-ADD ansible /opt/docker-backup/ansible
+ADD backup.sh /opt/docker-backup/backup.sh
 
 RUN apt-get update
 RUN apt-get -y install cron
-RUN apt-get -y install ansible
-RUN apt-get -y install -y iputils-ping
-CMD ping bbc.co.uk
+
+RUN chmod 0644 /opt/docker-backup/backup.sh
+
+RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | crontab -
+
+CMD cron
+
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
 #FROM : This command builds an initial layer from an existing image (ever image is based on another image)
