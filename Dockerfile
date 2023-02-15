@@ -37,7 +37,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 RUN pip3 install docker
 
 #add cron job for backup script
-RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | crontab -
+RUN crontab -l | { cat; echo "0 3 * * * python3 /opt/docker-backup/backup.py"; } | crontab -
 
 #start cron service
 CMD cron
