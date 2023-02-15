@@ -15,7 +15,7 @@ RUN apt-get -y install \
     curl \
     gnupg \
     lsb-release
-RUN sudo mkdir -m 0755 -p /etc/apt/keyrings
+RUN mkdir -m 0755 -p /etc/apt/keyrings
 RUN curl -fsSL https://download.docker.com/linux/debian/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
 RUN echo \
   "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/debian \
