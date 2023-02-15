@@ -1,7 +1,0 @@
----
-- hosts: localhost
-  vars_files:
-    - ['accounts.yml', 'defaults/accounts.yml']
-    - ['backup_config.yml', 'defaults/backup_config.yml']
-  roles:
-    - { role: backup, tags: ['backup'] }
