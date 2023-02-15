@@ -25,7 +25,13 @@ RUN apt-get update
 RUN apt-get -y install docker-ce docker-ce-cli
 
 #install Python3
-RUN apt-get install -y python3
+
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.5 \
+    python3-pip \
+    && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
 #install dependencies
 RUN pip3 install docker
