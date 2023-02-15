@@ -7,7 +7,7 @@ ADD backup.sh /opt/docker-backup/backup.sh
 RUN apt-get update
 RUN apt-get -y install cron
 
-RUN chmod 0644 /opt/docker-backup/backup.sh
+RUN chmod +x /opt/docker-backup/backup.sh
 
 RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | crontab -
 
