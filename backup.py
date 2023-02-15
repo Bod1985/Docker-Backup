@@ -6,7 +6,7 @@ import docker
 ignore_list = ['docker-backup','portainer']
 client = docker.APIClient(base_url='unix://var/run/docker.sock')
 
-running_containers = client.containers.list()
+running_containers = client.containers()
 
 print(running_containers)
 
