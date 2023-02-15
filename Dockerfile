@@ -2,7 +2,7 @@ FROM debian
 
 WORKDIR /opt/docker-backup
 
-ADD backup.sh /opt/docker-backup/backup.sh
+ADD backup.py /opt/docker-backup/backup.py
 
 RUN apt-get update
 
@@ -37,7 +37,7 @@ RUN crontab -l | { cat; echo "0 3 * * * bash /opt/docker-backup/backup.sh"; } | 
 CMD cron
 
 #initiate script immediately
-CMD /opt/docker-backup/backup.sh
+CMD python3 /opt/docker-backup/backup.py
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
