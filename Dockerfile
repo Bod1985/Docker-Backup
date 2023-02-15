@@ -6,6 +6,7 @@ ADD backup.sh /opt/docker-backup/backup.sh
 
 RUN apt-get update
 RUN apt-get -y install cron
+RUN apt-get -y install docker-ce docker-ce-cli
 
 RUN chmod +x /opt/docker-backup/backup.sh
 
