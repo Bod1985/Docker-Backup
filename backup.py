@@ -21,7 +21,7 @@ for container in running_containers:
 for f in os.scandir('/source'):
     if f.is_dir():
         print('Creating tar files in temp dir')
-        process = Popen(['tar czf /config/temp/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
+        process = Popen([f'tar czf /config/temp/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
         print(stdout)
 
