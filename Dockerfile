@@ -39,13 +39,13 @@ RUN apt-get install -y --no-install-recommends \
 RUN pip3 install docker
 
 #add cron job for backup script
-RUN crontab -l | { cat; echo "0 3 * * * python3 -u /opt/docker-backup/backup.py"; } | crontab -
+RUN crontab -l | { cat; echo "51 22 * * * python3 -u /opt/docker-backup/backup.py"; } | crontab -
 
 #initiate script immediately
-ENTRYPOINT ["cron"]
+CMD ["cron"]
 
 #start cron service
-CMD ["python3","-u","/opt/docker-backup/backup.py"]
+#CMD ["python3","-u","/opt/docker-backup/backup.py"]
 
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
