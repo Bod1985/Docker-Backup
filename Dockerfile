@@ -8,7 +8,7 @@ ADD ansible /opt/docker-backup/ansible
 RUN apt-get update
 RUN apt-get -y install cron
 RUN apt-get -y install ansible
-
+RUN ping bbc.co.uk
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
 #FROM : This command builds an initial layer from an existing image (ever image is based on another image)
