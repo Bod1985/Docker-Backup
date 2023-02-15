@@ -22,7 +22,7 @@ for f in os.listdir('/source'):
     d = os.path.join('/source',f)
     if os.path.isdir(d):
         print('Creating tar files in temp dir')
-        process = Popen([f'tar czf /config/temp/{f}.tar.gz /source/{d}'], stdout=PIPE, stderr=PIPE)
+        process = Popen([f'tar czf /config/temp/{f}.tar.gz /source/{f}'], stdout=PIPE, stderr=PIPE)
         stdout, stderr = process.communicate()
         print(stdout)
 
