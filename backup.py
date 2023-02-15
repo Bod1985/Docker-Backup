@@ -3,18 +3,20 @@
 from subprocess import Popen, PIPE
 import docker
 
-
-client = docker.from_env()
+ignore_list = ['docker-backup','portainer']
+client = docker.APIClient(base_url='unix://var/run/docker.sock')
 
 running_containers = client.containers.list()
 
 print(running_containers)
 
 for container in running_containers:
-    client.stop
+    if container.name not in ignore_list:
+        client.stop(container)
 
 process = Popen(['cp', '-r', '/source/*', '/dest'], stdout=PIPE, stderr=PIPE)
 stdout, stderr = process.communicate()
 
 for container in running_containers:
-    client.start
+    if container.name not in ignore_list:
+        client.start(container)
