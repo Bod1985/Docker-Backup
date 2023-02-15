@@ -8,6 +8,7 @@ ADD ansible /opt/docker-backup/ansible
 RUN apt-get update
 RUN apt-get -y install cron
 RUN apt-get -y install ansible
+RUN apt-get -y install -y iputils-ping
 CMD ping bbc.co.uk
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
