@@ -1,56 +1,78 @@
 #!/bin/python3
 
-'''Module providing terminal process creation.'''
+'''imports'''
 import os
 from subprocess import Popen, PIPE
+import socket
 import docker
 from crontab import CronTab
 
-#CRON_SCHEDULE="0 3 * * *"
-#RUN="False"
-#IGNORE_LIST=['docker-backup','portainer']
+def get_container_name():
+    '''get hostname and determine container name'''
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
+    container_id = socket.gethostname()
+    container = client.containers.get(container_id)
+    client.close()
+    return container.name
 
-if os.environ['CRON_SCHEDULE'] is not None:
-    CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
-    print(CRON_SCHEDULE)
-if os.environ['RUN'] is not None:
-    RUN=os.environ['RUN']
-    print(RUN)
-if os.environ['IGNORE_LIST'] is not None:
-    IGNORE_LIST=os.environ['IGNORE_LIST']
-    print(IGNORE_LIST)
+def write_cron():
+    '''write to crontab'''
+    with CronTab(user='root') as cron:
+        cron.remove_all(comment='docker-backup')
+        job = cron.new(command=\
+            'python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2',\
+                comment='docker-backup')
+        job.setall(f'{CRON_SCHEDULE}')
+        job.enable()
+        cron.write()
 
-with CronTab(user='root') as cron:
-    cron.remove_all(comment='docker-backup')
-    job = cron.new(command='python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2', comment='docker-backup')
-    job.setall(f'{CRON_SCHEDULE}')
-    job.enable()
-    cron.write()
-
-if RUN == "True":
+def run():
+    '''run backup'''
     stopped_containers = []
-    client = docker.APIClient(base_url='unix://var/run/docker.sock')
+    client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
-    running_containers = client.containers()
-
-    for container in running_containers:
-        if container["Names"][0].strip("/") not in IGNORE_LIST:
-            print(f'Stopping {container["Names"][0].strip("/")}')
-            client.stop(container['Id'])
+    for container in client.containers():
+        if container.name not in IGNORE_LIST:
+            print(f'Stopping {container.name}')
+            client.stop(container.id)
             stopped_containers.append(container)
 
-    for f in os.listdir('/source'):
-        d = os.path.join('/source',f)
-        if os.path.isdir(d):
-            print(f'Creating tar file at /dest/{f}.tar.gz')
-            process = Popen(['tar', '-zcvf', f'/dest/{f}.tar.gz', f'/source/{f}'], stdout=PIPE, stderr=PIPE)
+    print('Containers stopped, starting backup')
+
+    for file in os.listdir('/source'):
+        folder = os.path.join('/source',file)
+        if os.path.isdir(folder):
+            print(f'Creating tar file at /dest/{file}.tar.gz')
+            process = Popen(['tar', '-zcvf', f'/dest/{file}.tar.gz', f'/source/{file}'],\
+                stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
+            print(stdout,stderr)
+
+    print('tar creation complete, restarting containers')
 
     for container in stopped_containers:
-        print(f'Restarting {container["Names"][0].strip("/")}')
-        client.start(container["Id"])
+        print(f'Restarting {container.name}')
+        client.start(container.name)
 
     print('BACKUP COMPLETE. Next run at BLAH')
+    client.close()
+
+if os.environ['CRON_SCHEDULE'] is not None \
+    and os.environ['RUN'] is not None and \
+        os.environ['IGNORE_LIST'] is not None:
+    CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
+    print(f'CRON: {CRON_SCHEDULE}')
+    RUN=os.environ['RUN']
+    print(f'Run once: {RUN}')
+    IGNORE_LIST=f'{os.environ["IGNORE_LIST"]},{get_container_name()}'
+    print(f'Ignore List: {IGNORE_LIST}')
+else:
+    print('ERROR, missing or invalid env var')
+
+write_cron()
+if RUN == "True":
+    print('Run enabled, starting backup')
+    run()
 else:
     os.environ['RUN'] = "True"
     print(f'Run disabled, cron set for {CRON_SCHEDULE}')
