@@ -2,18 +2,23 @@ version: "3"
 services:
   docker-backup:
     container_name: docker-backup
+    tty: true
     restart: unless-stopped
-    image: docker.io/bod1985/docker-backup:latest
+    image: bod1985/docker_backup:latest
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - /opt/docker-backup/:/config
       - backup_dest:/dest
       - /opt/:/source
-
+    environment:
+      - TZ=Europe/London
+      - CRON_SCHEDULE=0 3 * * *
+      - RUN=True
+      - IGNORE_LIST=portainer
 volumes:
     backup_dest:
       driver: local
       driver_opts:
-        type: cifs    
-        device: //<smb_ip>/<share>
-        o: "username=<user>,password=<pass>,vers=2.0,uid=1000,gid=500"
+        type: cifs
+        device: //<smbserver>/<smbshare>
+        o: "username=<user>,password=<password>,vers=2.0,uid=1000,gid=500"
