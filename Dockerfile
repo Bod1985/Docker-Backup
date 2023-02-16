@@ -43,6 +43,9 @@ ENV CRON_SCHEDULE "0 3 * * *"
 ENV RUN "False"
 ENV IGNORE_LIST=['docker-backup']
 
+RUN export CRON_SCHEDULE=CRON_SCHEDULE
+RUN export RUN=RUN
+RUN export IGNORE_LIST=IGNORE_LIST
 CMD [ "python3", "-u", "/opt/docker-backup/backup.py" ]
 
 #start cron service
