@@ -20,10 +20,6 @@ ENV IGNORE_LIST=[]
 
 CMD [ "python3", "-u", "-i", "/opt/docker-backup/backup.py" ]
 
-#start cron service
-#CMD ["python3","-u","/opt/docker-backup/backup.py"]
-
-
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
 #FROM : This command builds an initial layer from an existing image (ever image is based on another image)
