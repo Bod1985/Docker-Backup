@@ -13,11 +13,9 @@ IGNORE_LIST=['docker-backup']
 if os.environ['CRON_SCHEDULE'] is not None:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
 if os.environ['RUN'] is not None:
-    CRON_SCHEDULE=os.environ['RUN']
+   RUN=os.environ['RUN']
 if os.environ['IGNORE_LIST'] is not None:
-    CRON_SCHEDULE=IGNORE_LIST.append(os.environ['IGNORE_LIST'])
-
-
+    IGNORE_LIST=IGNORE_LIST.append(os.environ['IGNORE_LIST'])
 
 with CronTab(user='root') as cron:
     cron.remove_all(comment='docker-backup')
