@@ -39,9 +39,8 @@ RUN apt-get install -y --no-install-recommends \
 RUN pip3 install docker
 RUN pip3 install python-crontab
 
-ENTRYPOINT [ "python3", "-u", "/opt/docker-backup/backup.py" ]
+CMD [ "python3", "-u", "/opt/docker-backup/backup.py" ]
 
-CMD [ "cron" ]
 #start cron service
 #CMD ["python3","-u","/opt/docker-backup/backup.py"]
 
