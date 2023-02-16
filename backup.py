@@ -18,10 +18,13 @@ if os.environ['RUN'] is not None:
 if os.environ['IGNORE_LIST'] is not None:
     CRON_SCHEDULE=IGNORE_LIST.append(os.environ['IGNORE_LIST'])
 
-cron.remove_all(comment='docker-backup')
-job = cron.new(command='python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2', comment='docker-backup')
-job.setall(CRON_SCHEDULE)
-job.enable()
+
+
+with CronTab(user='root') as cron:
+    cron.remove_all(comment='docker-backup')
+    job = cron.new(command='python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2', comment='docker-backup')
+    job.setall(CRON_SCHEDULE)
+    job.enable()
 
 if RUN == "True":
     stopped_containers = []
