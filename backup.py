@@ -5,7 +5,6 @@ import os
 from subprocess import Popen, PIPE
 import docker
 from crontab import CronTab
-cron = CronTab(tabfile='/etc/crontab', user=False)  # system users cron
 
 CRON_SCHEDULE="0 3 * * *"
 RUN="False"
