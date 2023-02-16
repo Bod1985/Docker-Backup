@@ -6,9 +6,9 @@ from subprocess import Popen, PIPE
 import docker
 from crontab import CronTab
 
-CRON_SCHEDULE="0 3 * * *"
-RUN="False"
-IGNORE_LIST=['docker-backup','portainer']
+#CRON_SCHEDULE="0 3 * * *"
+#RUN="False"
+#IGNORE_LIST=['docker-backup','portainer']
 
 if os.environ['CRON_SCHEDULE'] is not None:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
@@ -17,7 +17,7 @@ if os.environ['RUN'] is not None:
     RUN=os.environ['RUN']
     print(RUN)
 if os.environ['IGNORE_LIST'] is not None:
-    #IGNORE_LIST=IGNORE_LIST.append(os.environ['IGNORE_LIST'])
+    IGNORE_LIST=os.environ['IGNORE_LIST']
     print(IGNORE_LIST)
 
 with CronTab(user='root') as cron:
