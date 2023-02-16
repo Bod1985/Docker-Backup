@@ -6,8 +6,6 @@ ADD backup.py /opt/docker-backup/backup.py
 
 RUN apk update
 
-#RUN apk add docker-cli
-
 #install Python3
 RUN apk add --update python3 py3-pip
 
