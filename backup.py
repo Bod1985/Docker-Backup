@@ -34,7 +34,7 @@ def run():
     for container in client.containers.list():
         if container.name not in IGNORE_LIST:
             print(f'Stopping {container.name}')
-            client.stop(container.id)
+            container.stop()
             stopped_containers.append(container)
 
     print('Containers stopped, starting backup')
@@ -52,7 +52,7 @@ def run():
 
     for container in stopped_containers:
         print(f'Restarting {container.name}')
-        client.start(container.name)
+        container.start()
 
     print('BACKUP COMPLETE. Next run at BLAH')
     client.close()
