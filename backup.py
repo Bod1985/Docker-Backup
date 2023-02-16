@@ -31,7 +31,7 @@ def run():
     stopped_containers = []
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
-    for container in client.containers():
+    for container in client.containers.list():
         if container.name not in IGNORE_LIST:
             print(f'Stopping {container.name}')
             client.stop(container.id)
