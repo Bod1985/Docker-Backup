@@ -41,6 +41,7 @@ RUN pip3 install python-crontab
 
 ENTRYPOINT [ "python3", "-u", "/opt/docker-backup/backup.py" ]
 
+CMD [ "cron" ]
 #start cron service
 #CMD ["python3","-u","/opt/docker-backup/backup.py"]
 
