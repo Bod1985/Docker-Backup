@@ -10,7 +10,11 @@ import apprise
 
 def send_notification(title, message):
     '''Send apprise notification'''
-    notifier_service = os.environ['NOTIFY_SERVICE']
+    try:
+        notifier_service = os.environ['NOTIFY_SERVICE']
+    except:
+        print('missing notification ENV vars')
+        return False
     if notifier_service == 'telegram':
         notifier = apprise.Apprise()
         chat_id = os.environ['CHAT_ID']
@@ -77,17 +81,17 @@ def run():
     send_notification('Docker-Backup','BACKUP COMPLETE')
     client.close()
 
-if os.environ['CRON_SCHEDULE'] is not None \
-    and os.environ['RUN'] is not None and \
-        os.environ['IGNORE_LIST'] is not None:
+try:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
     print(f'CRON: {CRON_SCHEDULE}')
     RUN=os.environ['RUN']
     print(f'Run once: {RUN}')
     IGNORE_LIST=f'{os.environ["IGNORE_LIST"]},{get_container_name()}'
     print(f'Ignore List: {IGNORE_LIST}')
-else:
-    print('ERROR, missing or invalid env var')
+except:
+    print('ERROR, missing or invalid env vars')
+    exit()
+
 
 write_cron()
 if RUN == "True":
