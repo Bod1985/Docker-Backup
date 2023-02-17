@@ -6,6 +6,33 @@ from subprocess import Popen, PIPE
 import socket
 import docker
 from crontab import CronTab
+import apprise
+from cron_descriptor import get_description
+
+def send_notification(title, message):
+    '''Send apprise notification'''
+    try:
+        notifier_service = os.environ['NOTIFY_SERVICE']
+    except:
+        print('missing notification ENV vars')
+        return False
+    if notifier_service == 'telegram':
+        notifier = apprise.Apprise()
+        try:
+            chat_id = os.environ['CHAT_ID']
+            api_key = os.environ['API_KEY']
+        except:
+            print('missing notification ENV vars')
+            return False
+        # Telegram notification tgram://bottoken/ChatID
+        notifier.add(f'tgram://{api_key}/{chat_id}')
+        notifier.notify(
+            title=title,
+            body=message
+        )
+        notifier.clear()
+    else:
+        return False
 
 def get_container_name():
     '''get hostname and determine container name'''
@@ -28,6 +55,7 @@ def write_cron():
 
 def run():
     '''run backup'''
+    send_notification('Docker-Backup','Backup starting soon...')
     stopped_containers = []
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -38,7 +66,7 @@ def run():
             stopped_containers.append(container)
 
     print('Containers stopped, starting backup')
-
+    send_notification('Docker-Backup','Containers stopped, starting backup...')
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
@@ -49,30 +77,33 @@ def run():
             print(stdout,stderr)
 
     print('tar creation complete, restarting containers')
-
+    send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
         print(f'Restarting {container.name}')
         container.start()
 
     print('BACKUP COMPLETE. Next run at BLAH')
+    send_notification('Docker-Backup','BACKUP COMPLETE')
     client.close()
 
-if os.environ['CRON_SCHEDULE'] is not None \
-    and os.environ['RUN'] is not None and \
-        os.environ['IGNORE_LIST'] is not None:
+try:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
-    print(f'CRON: {CRON_SCHEDULE}')
+    print('CRON:', get_description(CRON_SCHEDULE))
     RUN=os.environ['RUN']
     print(f'Run once: {RUN}')
     IGNORE_LIST=f'{os.environ["IGNORE_LIST"]},{get_container_name()}'
     print(f'Ignore List: {IGNORE_LIST}')
-else:
-    print('ERROR, missing or invalid env var')
+except:
+    print('ERROR, missing or invalid env vars')
+    exit()
+
 
 write_cron()
 if RUN == "True":
-    print('Run enabled, starting backup')
+    print(f'Run enabled, starting backup. Will next run {get_description(CRON_SCHEDULE)}')
     run()
 else:
     os.environ['RUN'] = "True"
-    print(f'Run disabled, cron set for {CRON_SCHEDULE}')
+    send_notification('Docker-Backup',\
+        f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
+    print('Run disabled, will run', get_description(CRON_SCHEDULE))
