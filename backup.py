@@ -24,8 +24,8 @@ def setup_notificiations():
 def send_notification(title, message):
     '''Send apprise notification'''
     notifier.notify(
-        body=title,
-        title=message,
+        body=message,
+        title=title,
     )
 
 def get_container_name():
