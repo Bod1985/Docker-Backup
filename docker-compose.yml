@@ -9,7 +9,14 @@ services:
       - /opt/docker-backup/:/config
       - backup_dest:/dest
       - /opt/:/source
-
+    environment:
+      - TZ=Europe/London
+      - CRON_SCHEDULE=0 3 * * *
+      - RUN=True
+      - IGNORE_LIST=portainer
+      - NOTIFY_SERVICE=telegram
+      - CHAT_ID=<chatid>
+      - API_KEY=<apikey>
 volumes:
     backup_dest:
       driver: local
