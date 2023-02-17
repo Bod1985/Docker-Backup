@@ -107,7 +107,8 @@ def run():
                 Next run {get_description(CRON_SCHEDULE)}')
     send_notification('Docker-Backup',\
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
-             Will run {get_description(CRON_SCHEDULE)}')
+            Backup size: {backup_size}\
+                Will run {get_description(CRON_SCHEDULE)}')
     client.close()
 
 try:
