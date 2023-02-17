@@ -7,6 +7,7 @@ import socket
 import docker
 from crontab import CronTab
 import apprise
+from cron_descriptor import get_description
 
 def send_notification(title, message):
     '''Send apprise notification'''
@@ -17,8 +18,12 @@ def send_notification(title, message):
         return False
     if notifier_service == 'telegram':
         notifier = apprise.Apprise()
-        chat_id = os.environ['CHAT_ID']
-        api_key = os.environ['API_KEY']
+        try:
+            chat_id = os.environ['CHAT_ID']
+            api_key = os.environ['API_KEY']
+        except:
+            print('missing notification ENV vars')
+            return False
         # Telegram notification tgram://bottoken/ChatID
         notifier.add(f'tgram://{api_key}/{chat_id}')
         notifier.notify(
@@ -83,7 +88,7 @@ def run():
 
 try:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
-    print(f'CRON: {CRON_SCHEDULE}')
+    print('CRON:', get_description(CRON_SCHEDULE))
     RUN=os.environ['RUN']
     print(f'Run once: {RUN}')
     IGNORE_LIST=f'{os.environ["IGNORE_LIST"]},{get_container_name()}'
@@ -100,5 +105,5 @@ if RUN == "True":
 else:
     os.environ['RUN'] = "True"
     send_notification('Docker-Backup',\
-            f'Container started, RUN disabled cron set for {CRON_SCHEDULE}')
-    print(f'Run disabled, cron set for {CRON_SCHEDULE}')
+        f'Container started, RUN disabled cron set for {get_description(CRON_SCHEDULE)}')
+    print('Run disabled, cron set for', get_description(CRON_SCHEDULE))
