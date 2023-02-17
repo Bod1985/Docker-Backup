@@ -100,10 +100,10 @@ except:
 
 write_cron()
 if RUN == "True":
-    print('Run enabled, starting backup')
+    print(f'Run enabled, starting backup. Will next run {get_description(CRON_SCHEDULE)}')
     run()
 else:
     os.environ['RUN'] = "True"
     send_notification('Docker-Backup',\
-        f'Container started, RUN disabled cron set for {get_description(CRON_SCHEDULE)}')
-    print('Run disabled, cron set for', get_description(CRON_SCHEDULE))
+        f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
+    print('Run disabled, will run', get_description(CRON_SCHEDULE))
