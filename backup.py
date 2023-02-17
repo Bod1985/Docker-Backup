@@ -8,25 +8,22 @@ import docker
 from crontab import CronTab
 import apprise
 
-notifier = apprise.Apprise()
-def setup_notificiations():
-    '''Configure apprise service'''
+def send_notification(title, message):
+    '''Send apprise notification'''
     notifier_service = os.environ['NOTIFY_SERVICE']
     if notifier_service == 'telegram':
+        notifier = apprise.Apprise()
         chat_id = os.environ['CHAT_ID']
         api_key = os.environ['API_KEY']
         # Telegram notification tgram://bottoken/ChatID
         notifier.add(f'tgram://{api_key}/{chat_id}')
-        return True
+        notifier.notify(
+            title=title,
+            body=message
+        )
+        notifier.clear()
     else:
         return False
-
-def send_notification(title, message):
-    '''Send apprise notification'''
-    notifier.notify(
-        title=title,
-        body=message
-    )
 
 def get_container_name():
     '''get hostname and determine container name'''
@@ -49,8 +46,7 @@ def write_cron():
 
 def run():
     '''run backup'''
-    if setup_notificiations():
-        send_notification('Docker-Backup','Backup starting soon...')
+    send_notification('Docker-Backup','Backup starting soon...')
     stopped_containers = []
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -61,8 +57,7 @@ def run():
             stopped_containers.append(container)
 
     print('Containers stopped, starting backup')
-    if setup_notificiations():
-        send_notification('Docker-Backup','Containers stopped, starting backup...')
+    send_notification('Docker-Backup','Containers stopped, starting backup...')
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
@@ -73,15 +68,13 @@ def run():
             print(stdout,stderr)
 
     print('tar creation complete, restarting containers')
-    if setup_notificiations():
-        send_notification('Docker-Backup','Tar creation complete, restarting containers...')
+    send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
         print(f'Restarting {container.name}')
         container.start()
 
     print('BACKUP COMPLETE. Next run at BLAH')
-    if setup_notificiations():
-        send_notification('Docker-Backup','BACKUP COMPLETE')
+    send_notification('Docker-Backup','BACKUP COMPLETE')
     client.close()
 
 if os.environ['CRON_SCHEDULE'] is not None \
@@ -102,6 +95,6 @@ if RUN == "True":
     run()
 else:
     os.environ['RUN'] = "True"
-    if setup_notificiations():
-        send_notification('Docker-Backup',f'Container started, RUN disabled cron set for {CRON_SCHEDULE}')
+    send_notification('Docker-Backup',\
+            f'Container started, RUN disabled cron set for {CRON_SCHEDULE}')
     print(f'Run disabled, cron set for {CRON_SCHEDULE}')
