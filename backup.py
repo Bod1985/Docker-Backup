@@ -8,6 +8,7 @@ import time
 import docker
 from crontab import CronTab
 import apprise
+import humanize
 from cron_descriptor import get_description
 
 def send_notification(title, message):
@@ -59,7 +60,7 @@ def get_folder_size(folder: str):
     size = 0
     for ele in os.scandir(folder):
         size+=os.stat(ele).st_size
-    print(size)
+    return humanize.naturalsize(size, gnu=True)
 
 
 def run():
@@ -99,10 +100,11 @@ def run():
         container.start()
     end = time.time()
     elapsed = end - start
-    get_folder_size(destfolder)
-    print(f'BACKUP COMPLETED in \
+    backup_size = get_folder_size(destfolder)
+    print(f'Backup Completed in \
         {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}. \
-            Will run {get_description(CRON_SCHEDULE)}')
+            Backup size: {backup_size} \
+                Next run {get_description(CRON_SCHEDULE)}')
     send_notification('Docker-Backup',\
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
              Will run {get_description(CRON_SCHEDULE)}')
