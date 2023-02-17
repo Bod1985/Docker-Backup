@@ -4,6 +4,7 @@
 import os
 from subprocess import Popen, PIPE
 import socket
+import time
 import docker
 from crontab import CronTab
 import apprise
@@ -53,9 +54,18 @@ def write_cron():
         job.enable()
         cron.write()
 
+def get_folder_size(folder: str):
+    '''get folder size'''
+    size = 0
+    for ele in os.scandir(folder):
+        size+=os.stat(ele).st_size
+    print(size)
+
+
 def run():
     '''run backup'''
     send_notification('Docker-Backup','Backup starting soon...')
+    start = time.time()
     stopped_containers = []
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -67,11 +77,14 @@ def run():
 
     print('Containers stopped, starting backup')
     send_notification('Docker-Backup','Containers stopped, starting backup...')
+    destfolder = os.path.join('/dest',\
+                time.strftime("%d_%m_%y", time.gmtime(time.time())))
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
-            print(f'Creating tar file at /dest/{file}.tar.gz')
-            process = Popen(['tar', '-zcvf', f'/dest/{file}.tar.gz', f'/source/{file}'],\
+            newfile = os.path.join(destfolder, file,'.tar.gz')
+            print(f'Creating tar file at {newfile}')
+            process = Popen(['tar', '-zcvf', newfile, f'/source/{file}'],\
                 stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             print(stdout,stderr)
@@ -81,9 +94,15 @@ def run():
     for container in stopped_containers:
         print(f'Restarting {container.name}')
         container.start()
-
-    print('BACKUP COMPLETE. Next run at BLAH')
-    send_notification('Docker-Backup','BACKUP COMPLETE')
+    end = time.time()
+    elapsed = end - start
+    get_folder_size(destfolder)
+    print(f'BACKUP COMPLETED in \
+        {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}. \
+            Will run {get_description(CRON_SCHEDULE)}')
+    send_notification('Docker-Backup',\
+        f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
+             Will run {get_description(CRON_SCHEDULE)}')
     client.close()
 
 try:
