@@ -80,8 +80,8 @@ def run():
     destfolder = os.path.join('/dest',\
                 time.strftime("%d_%m_%y", time.gmtime(time.time())))
     process = Popen(['mkdir', destfolder], stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
-            print(stdout,stderr)
+    stdout, stderr = process.communicate()
+    print(stdout,stderr)
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
