@@ -120,10 +120,16 @@ except:
 
 
 write_cron()
-cronRun = sys.argv[1]
+try: 
+    cronRun = sys.argv[1]
+    if cronRun = "run":
+        cronRun = True
+except:
+    cronRun = False
+    
 if RUN == "True":
     run()
-elif cronRun is run:
+elif cronRun is True:
     run()
 else:
     send_notification('Docker-Backup',\
