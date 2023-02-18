@@ -128,8 +128,7 @@ if RUN == "True":
     print(f'Run enabled, starting backup. Will next run {get_description(CRON_SCHEDULE)}')
     run()
 else:
-    os.environ['RUN'] = "True"
-    RUN = "True"
+    os.putenv("RUN", "True")
     send_notification('Docker-Backup',\
         f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
     print('Run disabled, will run', get_description(CRON_SCHEDULE))
