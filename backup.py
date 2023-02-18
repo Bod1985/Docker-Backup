@@ -88,7 +88,7 @@ def run():
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
-            print(f'Creating tar file at {newfile}')
+            print(f'Creating tar file at {newfile}.tar.gz')
             process = Popen(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'],\
                 stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
