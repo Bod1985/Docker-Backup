@@ -2,6 +2,7 @@
 
 '''imports'''
 import os
+import sys
 from subprocess import Popen, PIPE
 import socket
 import time
@@ -13,6 +14,7 @@ from cron_descriptor import get_description
 
 def send_notification(title, message):
     '''Send apprise notification'''
+    print(message)
     try:
         notifier_service = os.environ['NOTIFY_SERVICE']
     except:
@@ -49,7 +51,7 @@ def write_cron():
     with CronTab(user='root') as cron:
         cron.remove_all(comment='docker-backup')
         job = cron.new(command=\
-            'python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2',\
+            'python3 -u /opt/docker-backup/backup.py run> /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
         job.setall(f'{CRON_SCHEDULE}')
         job.enable()
@@ -76,7 +78,6 @@ def run():
             container.stop()
             stopped_containers.append(container)
 
-    print('Containers stopped, starting backup')
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',\
                 time.strftime("%d_%m_%y", time.gmtime(time.time())))
@@ -93,7 +94,6 @@ def run():
             stdout, stderr = process.communicate()
             print(stdout,stderr)
 
-    print('tar creation complete, restarting containers')
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
         print(f'Restarting {container.name}')
@@ -101,10 +101,6 @@ def run():
     end = time.time()
     elapsed = end - start
     backup_size = get_folder_size(destfolder)
-    print(f'Backup Completed in \
-        {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}. \
-            Backup size: {backup_size} \
-                Next run {get_description(CRON_SCHEDULE)}')
     send_notification('Docker-Backup',\
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
             Backup size: {backup_size}\
@@ -124,11 +120,11 @@ except:
 
 
 write_cron()
+cronRun = sys.argv[1]
 if RUN == "True":
-    print(f'Run enabled, starting backup. Will next run {get_description(CRON_SCHEDULE)}')
+    run()
+elif cronRun is run:
     run()
 else:
-    os.putenv("RUN", "True")
     send_notification('Docker-Backup',\
-        f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
-    print('Run disabled, will run', get_description(CRON_SCHEDULE))
+        f'Container started, RUN on start disabled will run {get_description(CRON_SCHEDULE)}')
