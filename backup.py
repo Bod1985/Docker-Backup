@@ -130,6 +130,7 @@ except:
 if RUN == "True":
     run()
 elif cronRun is True:
+    send_notification('Docker-Backup',f'Backup triggered by cron at {time.strftime("%d_%m_%y %H:%M:%S", time.gmtime(time.time())}')
     run()
 else:
     send_notification('Docker-Backup',\
