@@ -40,6 +40,13 @@ volumes:
 
 ```IGNORE_LIST``` (comma separated string) defines container names to exclude when stopping running containers
 
+```NOTIFY_SERVICE``` (string) defines the notification provider. Currently only telegram is supported
+
+```API_KEY``` (string) defines the Telegram API key
+
+```CHAT_ID``` (string) defines the chat ID that telegram notifications will be sent to
+
+```NOTIFY_SERVICE``` (string)
 
 ### 3. Bring up the container
 
