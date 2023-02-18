@@ -122,7 +122,7 @@ except:
 write_cron()
 try: 
     cronRun = sys.argv[1]
-    if cronRun = "run":
+    if cronRun == "run":
         cronRun = True
 except:
     cronRun = False
