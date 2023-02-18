@@ -46,7 +46,6 @@ volumes:
 
 ```CHAT_ID``` (string) defines the chat ID that telegram notifications will be sent to
 
-```NOTIFY_SERVICE``` (string)
 
 ### 3. Bring up the container
 
