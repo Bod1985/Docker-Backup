@@ -129,6 +129,7 @@ if RUN == "True":
     run()
 else:
     os.environ['RUN'] = "True"
+    RUN = "True"
     send_notification('Docker-Backup',\
         f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
     print('Run disabled, will run', get_description(CRON_SCHEDULE))
