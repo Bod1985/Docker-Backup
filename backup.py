@@ -2,15 +2,19 @@
 
 '''imports'''
 import os
+import sys
 from subprocess import Popen, PIPE
 import socket
+import time
 import docker
 from crontab import CronTab
 import apprise
+import humanize
 from cron_descriptor import get_description
 
 def send_notification(title, message):
     '''Send apprise notification'''
+    print(message)
     try:
         notifier_service = os.environ['NOTIFY_SERVICE']
     except:
@@ -47,15 +51,24 @@ def write_cron():
     with CronTab(user='root') as cron:
         cron.remove_all(comment='docker-backup')
         job = cron.new(command=\
-            'python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2',\
+            'python3 -u /opt/docker-backup/backup.py run> /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
         job.setall(f'{CRON_SCHEDULE}')
         job.enable()
         cron.write()
 
+def get_folder_size(folder: str):
+    '''get folder size'''
+    size = 0
+    for ele in os.scandir(folder):
+        size+=os.stat(ele).st_size
+    return humanize.naturalsize(size, gnu=True)
+
+
 def run():
     '''run backup'''
     send_notification('Docker-Backup','Backup starting soon...')
+    start = time.time()
     stopped_containers = []
     client = docker.DockerClient(base_url='unix://var/run/docker.sock')
 
@@ -65,25 +78,33 @@ def run():
             container.stop()
             stopped_containers.append(container)
 
-    print('Containers stopped, starting backup')
     send_notification('Docker-Backup','Containers stopped, starting backup...')
+    destfolder = os.path.join('/dest',\
+                time.strftime("%d_%m_%y", time.gmtime(time.time())))
+    process = Popen(['mkdir', destfolder], stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    print(stdout,stderr)
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
-            print(f'Creating tar file at /dest/{file}.tar.gz')
-            process = Popen(['tar', '-zcvf', f'/dest/{file}.tar.gz', f'/source/{file}'],\
+            newfile = os.path.join(destfolder, file)
+            print(f'Creating tar file at {newfile}.tar.gz')
+            process = Popen(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'],\
                 stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             print(stdout,stderr)
 
-    print('tar creation complete, restarting containers')
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
         print(f'Restarting {container.name}')
         container.start()
-
-    print('BACKUP COMPLETE. Next run at BLAH')
-    send_notification('Docker-Backup','BACKUP COMPLETE')
+    end = time.time()
+    elapsed = end - start
+    backup_size = get_folder_size(destfolder)
+    send_notification('Docker-Backup',\
+        f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
+            Backup size: {backup_size}\
+                Will run {get_description(CRON_SCHEDULE)}')
     client.close()
 
 try:
@@ -99,11 +120,18 @@ except:
 
 
 write_cron()
+try: 
+    cronRun = sys.argv[1]
+    if cronRun == "run":
+        cronRun = True
+except:
+    cronRun = False
+    
 if RUN == "True":
-    print(f'Run enabled, starting backup. Will next run {get_description(CRON_SCHEDULE)}')
+    run()
+elif cronRun is True:
+    send_notification('Docker-Backup',f'Backup triggered by cron {time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(time.time()))}')
     run()
 else:
-    os.environ['RUN'] = "True"
     send_notification('Docker-Backup',\
-        f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
-    print('Run disabled, will run', get_description(CRON_SCHEDULE))
+        f'Container started, RUN on start disabled will run {get_description(CRON_SCHEDULE)}')
