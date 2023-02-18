@@ -14,7 +14,7 @@ RUN pip3 install docker python-crontab apprise cron-descriptor humanize
 ENV CRON_SCHEDULE="0 3 * * *"
 ENV RUN="False"
 
-CMD [ "python3", "-u", "-i", "/opt/docker-backup/backup.py" ]
+CMD [ "crond", "&&", "python3", "-u", "-i", "/opt/docker-backup/backup.py" ]
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
