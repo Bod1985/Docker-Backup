@@ -2,13 +2,17 @@
 
 '''imports'''
 import os
-from subprocess import Popen, PIPE
 import socket
+import sys
 import time
-import docker
-from crontab import CronTab
+from subprocess import PIPE, Popen
+
 import apprise
+import docker
+import humanize
 from cron_descriptor import get_description
+from crontab import CronTab
+
 
 def send_notification(title, message):
     '''Send apprise notification'''
@@ -41,7 +45,7 @@ def write_cron():
     with CronTab(user='root') as cron:
         cron.remove_all()
         job = cron.new(command=\
-            'python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2',\
+            'python3 -u /opt/docker-backup/backup.py run > /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
         job.setall(f'{CRON_SCHEDULE}')
         job.enable()
@@ -52,7 +56,7 @@ def get_folder_size(folder: str):
     size = 0
     for ele in os.scandir(folder):
         size+=os.stat(ele).st_size
-    print(size)
+    return humanize.naturalsize(size, gnu=True)
 
 
 def run():
@@ -90,7 +94,11 @@ def run():
         container.start()
     end = time.time()
     elapsed = end - start
-    get_folder_size(destfolder)
+    backup_size = get_folder_size(destfolder)
+    send_notification('Docker-Backup',\
+        f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
+            \nBackup size: {backup_size}\
+                \nWill run {get_description(CRON_SCHEDULE)}')
     send_notification('Docker-Backup',\
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
              Will run {get_description(CRON_SCHEDULE)}')
@@ -109,9 +117,20 @@ except:
 
 
 write_cron()
+try:
+    CRON_RUN = sys.argv[1]
+    if CRON_RUN == "run":
+        CRON_RUN = True
+except:
+    CRON_RUN = False
+
 if RUN == "True":
     run()
-else:
-    os.environ['RUN'] = "True"
+elif CRON_RUN is True:
     send_notification('Docker-Backup',\
-        f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
+        f'Backup triggered by cron \
+            {time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(time.time()))}')
+    run()
+else:
+    send_notification('Docker-Backup',\
+        f'Container started, RUN on start disabled will run {get_description(CRON_SCHEDULE)}')
