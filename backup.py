@@ -39,7 +39,7 @@ def get_container_name():
 def write_cron():
     '''write to crontab'''
     with CronTab(user='root') as cron:
-        cron.remove_all(comment='docker-backup')
+        cron.remove_all()
         job = cron.new(command=\
             'python3 -u /opt/docker-backup/backup.py > /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
@@ -71,11 +71,14 @@ def run():
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',\
                 time.strftime("%d_%m_%y", time.gmtime(time.time())))
+    process = Popen(['mkdir', destfolder],stdout=PIPE, stderr=PIPE)
+    stdout, stderr = process.communicate()
+    print(stdout,stderr)
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file,'.tar.gz')
-            print(f'Creating tar file at {newfile}')
+            print(f'Creating tar file at {newfile}.tar.gz')
             process = Popen(['tar', '-zcvf', newfile, f'/source/{file}'],\
                 stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
@@ -112,4 +115,3 @@ else:
     os.environ['RUN'] = "True"
     send_notification('Docker-Backup',\
         f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
-        
