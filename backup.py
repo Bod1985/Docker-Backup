@@ -67,19 +67,19 @@ def get_past_date(str_days_ago):
     splitted = str_days_ago.split()
     if splitted[1].lower() in ['hour', 'hours', 'hr', 'hrs', 'h']:
         date = datetime.datetime.now() - relativedelta(hours=int(splitted[0]))
-        return str(date.date().isoformat())
+        return date.date().isoformat()
     elif splitted[1].lower() in ['day', 'days', 'd']:
         date = today - relativedelta(days=int(splitted[0]))
-        return str(date.isoformat())
+        return date.isoformat()
     elif splitted[1].lower() in ['wk', 'wks', 'week', 'weeks', 'w']:
         date = today - relativedelta(weeks=int(splitted[0]))
-        return str(date.isoformat())
+        return date.isoformat()
     elif splitted[1].lower() in ['mon', 'mons', 'month', 'months', 'm']:
         date = today - relativedelta(months=int(splitted[0]))
-        return str(date.isoformat())
+        return date.isoformat()
     elif splitted[1].lower() in ['yrs', 'yr', 'years', 'year', 'y']:
         date = today - relativedelta(years=int(splitted[0]))
-        return str(date.isoformat())
+        return date.isoformat()
     else:
         return "Wrong Argument format"
 
