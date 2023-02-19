@@ -1,6 +1,7 @@
 #!/bin/python3
 
 '''imports'''
+import datetime
 import os
 import socket
 import sys
@@ -12,6 +13,8 @@ import docker
 import humanize
 from cron_descriptor import get_description
 from crontab import CronTab
+from dateutil.relativedelta import relativedelta
+
 
 def send_notification(title, message):
     '''Send apprise notification'''
@@ -58,6 +61,43 @@ def get_folder_size(folder: str):
         size+=os.stat(ele).st_size
     return humanize.naturalsize(size, gnu=True)
 
+def get_past_date(str_days_ago):
+    '''get past date from human string'''
+    today = datetime.date.today()
+    splitted = str_days_ago.split()
+    if splitted[1].lower() in ['hour', 'hours', 'hr', 'hrs', 'h']:
+        date = datetime.datetime.now() - relativedelta(hours=int(splitted[0]))
+        return str(date.date().isoformat())
+    elif splitted[1].lower() in ['day', 'days', 'd']:
+        date = today - relativedelta(days=int(splitted[0]))
+        return str(date.isoformat())
+    elif splitted[1].lower() in ['wk', 'wks', 'week', 'weeks', 'w']:
+        date = today - relativedelta(weeks=int(splitted[0]))
+        return str(date.isoformat())
+    elif splitted[1].lower() in ['mon', 'mons', 'month', 'months', 'm']:
+        date = today - relativedelta(months=int(splitted[0]))
+        return str(date.isoformat())
+    elif splitted[1].lower() in ['yrs', 'yr', 'years', 'year', 'y']:
+        date = today - relativedelta(years=int(splitted[0]))
+        return str(date.isoformat())
+    else:
+        return "Wrong Argument format"
+
+def clean_old_backups():
+    '''remove backups older than number of units'''
+    try:
+        past_date = get_past_date(os.environ['CLEANUP_OLD'])
+    except:
+        print('ERROR: invalid ENV var CLEANUP_OLD, not removing old backups')
+
+    for file in os.listdir('/dest'):
+        folder = os.path.join('/dest',file)
+        if os.path.isdir(folder):
+            today = datetime.date.today()
+            cutoff = today - past_date
+            if file < cutoff:
+                send_notification('Docker-Backup',f'Removing {file} as it\'s older than {cutoff}')
+    return
 
 def run():
     '''run backup'''
@@ -73,8 +113,7 @@ def run():
             stopped_containers.append(container)
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
-    destfolder = os.path.join('/dest',\
-                time.strftime("%d_%m_%y", time.gmtime(time.time())))
+    destfolder = os.path.join('/dest',datetime.date.today())
     process = Popen(['mkdir', destfolder],stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     print(stdout,stderr)
@@ -99,10 +138,8 @@ def run():
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
             \nBackup size: {backup_size}\
                 \nWill run {get_description(CRON_SCHEDULE)}')
-    send_notification('Docker-Backup',\
-        f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
-             Will run {get_description(CRON_SCHEDULE)}')
     client.close()
+    clean_old_backups()
 
 try:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
