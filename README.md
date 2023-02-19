@@ -40,6 +40,7 @@ volumes:
 
 ```IGNORE_LIST``` (comma separated string) defines container names to exclude when stopping running containers
 
+```APPRISE_URL``` (string) defines apprise url for notifications - see https://github.com/caronc/apprise/wiki for more info
 
 ### 3. Bring up the container
 
