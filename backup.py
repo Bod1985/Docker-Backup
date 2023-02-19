@@ -2,41 +2,35 @@
 
 '''imports'''
 import os
-import sys
-from subprocess import Popen, PIPE
 import socket
+import sys
 import time
-import docker
-from crontab import CronTab
+from subprocess import PIPE, Popen
+
 import apprise
+import docker
 import humanize
 from cron_descriptor import get_description
+from crontab import CronTab
 
 def send_notification(title, message):
     '''Send apprise notification'''
     print(message)
     try:
-        notifier_service = os.environ['NOTIFY_SERVICE']
+        apprise_url = os.environ['APPRISE_URL']
     except:
         print('missing notification ENV vars')
         return False
-    if notifier_service == 'telegram':
-        notifier = apprise.Apprise()
-        try:
-            chat_id = os.environ['CHAT_ID']
-            api_key = os.environ['API_KEY']
-        except:
-            print('missing notification ENV vars')
-            return False
-        # Telegram notification tgram://bottoken/ChatID
-        notifier.add(f'tgram://{api_key}/{chat_id}')
-        notifier.notify(
-            title=title,
-            body=message
-        )
-        notifier.clear()
-    else:
-        return False
+
+    notifier = apprise.Apprise()
+    # Telegram notification tgram://bottoken/ChatID
+    notifier.add(apprise_url)
+    print(message)
+    notifier.notify(
+        title=title,
+        body=message
+    )
+    notifier.clear()
 
 def get_container_name():
     '''get hostname and determine container name'''
@@ -49,9 +43,9 @@ def get_container_name():
 def write_cron():
     '''write to crontab'''
     with CronTab(user='root') as cron:
-        cron.remove_all(comment='docker-backup')
+        cron.remove_all()
         job = cron.new(command=\
-            'python3 -u /opt/docker-backup/backup.py run> /proc/1/fd/1 2>/proc/1/fd/2',\
+            'python3 -u /opt/docker-backup/backup.py run > /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
         job.setall(f'{CRON_SCHEDULE}')
         job.enable()
@@ -81,7 +75,7 @@ def run():
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',\
                 time.strftime("%d_%m_%y", time.gmtime(time.time())))
-    process = Popen(['mkdir', destfolder], stdout=PIPE, stderr=PIPE)
+    process = Popen(['mkdir', destfolder],stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     print(stdout,stderr)
     for file in os.listdir('/source'):
@@ -103,8 +97,11 @@ def run():
     backup_size = get_folder_size(destfolder)
     send_notification('Docker-Backup',\
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
-            Backup size: {backup_size}\
-                Will run {get_description(CRON_SCHEDULE)}')
+            \nBackup size: {backup_size}\
+                \nWill run {get_description(CRON_SCHEDULE)}')
+    send_notification('Docker-Backup',\
+        f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
+             Will run {get_description(CRON_SCHEDULE)}')
     client.close()
 
 try:
@@ -120,17 +117,19 @@ except:
 
 
 write_cron()
-try: 
-    cronRun = sys.argv[1]
-    if cronRun == "run":
-        cronRun = True
+try:
+    CRON_RUN = sys.argv[1]
+    if CRON_RUN == "run":
+        CRON_RUN = True
 except:
-    cronRun = False
-    
+    CRON_RUN = False
+
 if RUN == "True":
     run()
-elif cronRun is True:
-    send_notification('Docker-Backup',f'Backup triggered by cron {time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(time.time()))}')
+elif CRON_RUN is True:
+    send_notification('Docker-Backup',\
+        f'Backup triggered by cron \
+            {time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(time.time()))}')
     run()
 else:
     send_notification('Docker-Backup',\
