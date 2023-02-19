@@ -99,7 +99,9 @@ def clean_old_backups():
             past_as_date = get_past_date(days_ago).split('-')
             past_as_date = datetime.date(int(past_as_date[0]),int(past_as_date[1]),int(past_as_date[2]))
             if file_as_date < past_as_date:
-                send_notification('Docker-Backup',f'Removing {file} as it\'s older than {past_as_date}')
+                send_notification('Docker-Backup',f'Removing {file} as it\'s older than {days_ago} ({past_as_date})')
+            process = Popen(['rm -rf', folder],stdout=PIPE, stderr=PIPE)
+            stdout, stderr = process.communicate()
     return
 
 def run():
@@ -165,13 +167,14 @@ except:
     CRON_RUN = False
 
 if RUN == "True":
+    run()
     clean_old_backups()
-    #run()
 elif CRON_RUN is True:
     send_notification('Docker-Backup',\
         f'Backup triggered by cron \
             {time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(time.time()))}')
     run()
+    cleanup_old_backups()
 else:
     send_notification('Docker-Backup',\
         f'Container started, RUN on start disabled will run {get_description(CRON_SCHEDULE)}')
