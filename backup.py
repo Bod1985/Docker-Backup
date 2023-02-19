@@ -13,27 +13,19 @@ from cron_descriptor import get_description
 def send_notification(title, message):
     '''Send apprise notification'''
     try:
-        notifier_service = os.environ['NOTIFY_SERVICE']
+        apprise_url = os.environ['APPRISE_URL']
     except:
         print('missing notification ENV vars')
         return False
-    if notifier_service == 'telegram':
-        notifier = apprise.Apprise()
-        try:
-            chat_id = os.environ['CHAT_ID']
-            api_key = os.environ['API_KEY']
-        except:
-            print('missing notification ENV vars')
-            return False
-        # Telegram notification tgram://bottoken/ChatID
-        notifier.add(f'tgram://{api_key}/{chat_id}')
-        notifier.notify(
-            title=title,
-            body=message
-        )
-        notifier.clear()
-    else:
-        return False
+
+    notifier = apprise.Apprise()
+    # Telegram notification tgram://bottoken/ChatID
+    notifier.add(apprise_url)
+    notifier.notify(
+        title=title,
+        body=message
+    )
+    notifier.clear()
 
 def get_container_name():
     '''get hostname and determine container name'''
