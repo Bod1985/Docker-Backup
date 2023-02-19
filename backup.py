@@ -86,17 +86,18 @@ def get_past_date(str_days_ago):
 def clean_old_backups():
     '''remove backups older than number of units'''
     try:
-        past_date = get_past_date(os.environ['CLEANUP_OLD'])
+        days_ago = os.environ['CLEANUP_OLD']
+        print(days_ago)
     except:
         print('ERROR: invalid ENV var CLEANUP_OLD, not removing old backups')
 
     for file in os.listdir('/dest'):
         folder = os.path.join('/dest',file)
         if os.path.isdir(folder):
-            today = datetime.date.today()
-            cutoff = today - past_date
             file_as_date = file.split('-')
-            if datetime.date(file_as_date[0],file_as_date[1],file_as_date[2]) < cutoff:
+            file_as_date = datetime.date(file_as_date[0],file_as_date[1],file_as_date[2])
+            print('file as date', file_as_date, 'past date', get_past_date(days_ago))
+            if file_as_date < get_past_date(days_ago):
                 send_notification('Docker-Backup',f'Removing {file} as it\'s older than {cutoff}')
     return
 
