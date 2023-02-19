@@ -13,7 +13,6 @@ import humanize
 from cron_descriptor import get_description
 from crontab import CronTab
 
-
 def send_notification(title, message):
     '''Send apprise notification'''
     try:
