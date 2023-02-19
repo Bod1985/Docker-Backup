@@ -15,6 +15,7 @@ from crontab import CronTab
 
 def send_notification(title, message):
     '''Send apprise notification'''
+    print(message)
     try:
         apprise_url = os.environ['APPRISE_URL']
     except:
@@ -80,9 +81,9 @@ def run():
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
-            newfile = os.path.join(destfolder, file + '.tar.gz')
+            newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            process = Popen(['tar', '-zcvf', newfile, f'/source/{file}'],\
+            process = Popen(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'],\
                 stdout=PIPE, stderr=PIPE)
             stdout, stderr = process.communicate()
             print(stdout,stderr)

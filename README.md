@@ -20,7 +20,7 @@ https://github.com/Bod1985/Docker-Backup/blob/main/docker-compose.yml
 
 
 
-If backing up to a samba share, configure the samba share folder and credentials:
+If backing up to a samba share, configure the samba share folder and credentials, otherwise remove this volume:
 ```
 volumes:
     backup_dest:
@@ -30,6 +30,8 @@ volumes:
         device: //<smb_ip>/<share>
         o: "username=<user>,password=<pass>,vers=2.0,uid=1000,gid=500"
 ```
+
+
 
 ### 2. Edit environmental variables
 
@@ -41,6 +43,7 @@ volumes:
 ```IGNORE_LIST``` (comma separated string) defines container names to exclude when stopping running containers
 
 ```APPRISE_URL``` (string) defines apprise url for notifications - see https://github.com/caronc/apprise/wiki for more info
+
 
 ### 3. Bring up the container
 
