@@ -164,7 +164,8 @@ except:
     CRON_RUN = False
 
 if RUN == "True":
-    run()
+    clean_old_backups()
+    #run()
 elif CRON_RUN is True:
     send_notification('Docker-Backup',\
         f'Backup triggered by cron \
