@@ -21,6 +21,7 @@ def send_notification(title, message):
     notifier = apprise.Apprise()
     # Telegram notification tgram://bottoken/ChatID
     notifier.add(apprise_url)
+    print(message)
     notifier.notify(
         title=title,
         body=message
@@ -67,7 +68,6 @@ def run():
             container.stop()
             stopped_containers.append(container)
 
-    print('Containers stopped, starting backup')
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',\
                 time.strftime("%d_%m_%y", time.gmtime(time.time())))
@@ -81,7 +81,6 @@ def run():
             stdout, stderr = process.communicate()
             print(stdout,stderr)
 
-    print('tar creation complete, restarting containers')
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
         print(f'Restarting {container.name}')
@@ -89,9 +88,6 @@ def run():
     end = time.time()
     elapsed = end - start
     get_folder_size(destfolder)
-    print(f'BACKUP COMPLETED in \
-        {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}. \
-            Will run {get_description(CRON_SCHEDULE)}')
     send_notification('Docker-Backup',\
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
              Will run {get_description(CRON_SCHEDULE)}')
@@ -111,10 +107,9 @@ except:
 
 write_cron()
 if RUN == "True":
-    print(f'Run enabled, starting backup. Will next run {get_description(CRON_SCHEDULE)}')
     run()
 else:
     os.environ['RUN'] = "True"
     send_notification('Docker-Backup',\
         f'Container started, RUN disabled will run {get_description(CRON_SCHEDULE)}')
-    print('Run disabled, will run', get_description(CRON_SCHEDULE))
+        
