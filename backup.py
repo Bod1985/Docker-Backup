@@ -77,7 +77,7 @@ def run():
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
-            newfile = os.path.join(destfolder, file,'.tar.gz')
+            newfile = os.path.join(destfolder, file + '.tar.gz')
             print(f'Creating tar file at {newfile}.tar.gz')
             process = Popen(['tar', '-zcvf', newfile, f'/source/{file}'],\
                 stdout=PIPE, stderr=PIPE)
