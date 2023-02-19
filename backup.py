@@ -95,7 +95,8 @@ def clean_old_backups():
         if os.path.isdir(folder):
             today = datetime.date.today()
             cutoff = today - past_date
-            if file < cutoff:
+            file_as_date = file.split('-')
+            if datetime.date(file_as_date[0],file_as_date[1],file_as_date[2]) < cutoff:
                 send_notification('Docker-Backup',f'Removing {file} as it\'s older than {cutoff}')
     return
 
@@ -113,7 +114,7 @@ def run():
             stopped_containers.append(container)
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
-    destfolder = os.path.join('/dest',datetime.date.today())
+    destfolder = os.path.join('/dest',str(datetime.date.today()))
     process = Popen(['mkdir', destfolder],stdout=PIPE, stderr=PIPE)
     stdout, stderr = process.communicate()
     print(stdout,stderr)
