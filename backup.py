@@ -95,7 +95,7 @@ def clean_old_backups():
         folder = os.path.join('/dest',file)
         if os.path.isdir(folder):
             file_as_date = file.split('-')
-            file_as_date = datetime.date(file_as_date[0],file_as_date[1],file_as_date[2])
+            file_as_date = datetime.date(int(file_as_date[0]),int(file_as_date[1]),int(file_as_date[2]))
             print('file as date', file_as_date, 'past date', get_past_date(days_ago))
             if file_as_date < get_past_date(days_ago):
                 send_notification('Docker-Backup',f'Removing {file} as it\'s older than {cutoff}')
