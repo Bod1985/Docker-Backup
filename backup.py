@@ -63,10 +63,10 @@ def get_folder_size(folder: str):
 
 def get_past_date(str_days_ago):
     '''get past date from human string'''
-    today = datetime.date.today()
+    today = datetime.today()
     splitted = str_days_ago.split()
     if splitted[1].lower() in ['hour', 'hours', 'hr', 'hrs', 'h']:
-        date = datetime.datetime.now() - relativedelta(hours=int(splitted[0]))
+        date = datetime.now() - relativedelta(hours=int(splitted[0]))
         return date.date().isoformat()
     elif splitted[1].lower() in ['day', 'days', 'd']:
         date = today - relativedelta(days=int(splitted[0]))
@@ -121,7 +121,7 @@ def run():
             stopped_containers.append(container)
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
-    destfolder = os.path.join('/dest',str(datetime.date.today()))
+    destfolder = os.path.join('/dest',str(datetime.today()))
     shell(f'mkdir {destfolder}')
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
