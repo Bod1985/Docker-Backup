@@ -86,10 +86,10 @@ def clean_old_backups():
     '''remove backups older than number of units'''
     try:
         days_ago = os.environ['CLEANUP_OLD']
-        print(days_ago)
     except:
         print('ERROR: invalid ENV var CLEANUP_OLD, not removing old backups')
-
+        return
+    send_notification('Docker-Backup',f'Cleanup enabled. Removing backups older than {days_ago}')
     for file in os.listdir('/dest'):
         folder = os.path.join('/dest',file)
         if os.path.isdir(folder):
