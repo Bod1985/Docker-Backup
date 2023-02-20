@@ -70,16 +70,16 @@ def get_past_date(str_days_ago):
         return date.date().isoformat()
     elif splitted[1].lower() in ['day', 'days', 'd']:
         date = today - relativedelta(days=int(splitted[0]))
-        return date.isoformat()
+        return date.date().isoformat()
     elif splitted[1].lower() in ['wk', 'wks', 'week', 'weeks', 'w']:
         date = today - relativedelta(weeks=int(splitted[0]))
-        return date.isoformat()
+        return date.date().isoformat()
     elif splitted[1].lower() in ['mon', 'mons', 'month', 'months', 'm']:
         date = today - relativedelta(months=int(splitted[0]))
-        return date.isoformat()
+        return date.date().isoformat()
     elif splitted[1].lower() in ['yrs', 'yr', 'years', 'year', 'y']:
         date = today - relativedelta(years=int(splitted[0]))
-        return date.isoformat()
+        return date.date().isoformat()
     else:
         return "Wrong Argument format"
 
@@ -121,7 +121,7 @@ def run():
             stopped_containers.append(container)
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
-    destfolder = os.path.join('/dest',str(datetime.today()))
+    destfolder = os.path.join('/dest',str(datetime.today().date().isoformat()))
     shell(f'mkdir {destfolder}')
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
