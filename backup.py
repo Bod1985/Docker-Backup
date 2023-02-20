@@ -99,7 +99,7 @@ def clean_old_backups():
             if file_as_date < past_as_date:
                 send_notification('Docker-Backup',\
                     f'Removing {file} as it\'s older than {days_ago} ({past_as_date})')
-            shell(f'rm -rf {folder}')
+            shell(['rm', '-rf', folder])
 
 def shell(cmd):
     '''execute shell command'''
@@ -122,13 +122,13 @@ def run():
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',str(datetime.today().date().isoformat()))
-    shell(f'mkdir {destfolder}')
+    shell(['mkdir', destfolder])
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            shell(f'tar -zcvf {newfile}.tar.gz /source/{file}')
+            shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
