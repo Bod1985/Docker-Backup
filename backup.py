@@ -1,12 +1,12 @@
 #!/bin/python3
 
 '''imports'''
-import datetime
 import os
 import socket
+import subprocess
 import sys
 import time
-from subprocess import PIPE, Popen
+from datetime import datetime
 
 import apprise
 import docker
@@ -94,15 +94,18 @@ def clean_old_backups():
     for file in os.listdir('/dest'):
         folder = os.path.join('/dest',file)
         if os.path.isdir(folder):
-            file_as_date = file.split('-')
-            file_as_date = datetime.date(int(file_as_date[0]),int(file_as_date[1]),int(file_as_date[2]))
-            past_as_date = get_past_date(days_ago).split('-')
-            past_as_date = datetime.date(int(past_as_date[0]),int(past_as_date[1]),int(past_as_date[2]))
+            file_as_date = datetime.fromisoformat(file)
+            past_as_date = datetime.fromisoformat(get_past_date(days_ago))
             if file_as_date < past_as_date:
-                send_notification('Docker-Backup',f'Removing {file} as it\'s older than {days_ago} ({past_as_date})')
-            process = Popen(['rm -rf', folder],stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
-    return
+                send_notification('Docker-Backup',\
+                    f'Removing {file} as it\'s older than {days_ago} ({past_as_date})')
+            shell(f'rm -rf {folder}')
+
+def shell(cmd):
+    '''execute shell command'''
+    process = subprocess.Popen(cmd, universal_newlines=True)
+    process.communicate()
+
 
 def run():
     '''run backup'''
@@ -119,18 +122,13 @@ def run():
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',str(datetime.date.today()))
-    process = Popen(['mkdir', destfolder],stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-    print(stdout,stderr)
+    shell(f'mkdir {destfolder}')
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            process = Popen(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'],\
-                stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
-            print(stdout,stderr)
+            shell(f'tar -zcvf {newfile}.tar.gz /source/{file}')
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
@@ -168,13 +166,11 @@ except:
 
 if RUN == "True":
     run()
-    clean_old_backups()
 elif CRON_RUN is True:
     send_notification('Docker-Backup',\
         f'Backup triggered by cron \
             {time.strftime("%d/%m/%y %H:%M:%S", time.gmtime(time.time()))}')
     run()
-    cleanup_old_backups()
 else:
     send_notification('Docker-Backup',\
         f'Container started, RUN on start disabled will run {get_description(CRON_SCHEDULE)}')
