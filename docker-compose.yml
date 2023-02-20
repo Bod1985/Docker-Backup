@@ -16,6 +16,7 @@ services:
       - RUN=True
       - IGNORE_LIST=portainer
       - APPRISE_URL=tgram://<apikey>/<chatid>
+      - CLEANUP_OLD=5 days
 volumes:
     backup_dest:
       driver: local

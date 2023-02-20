@@ -3,15 +3,18 @@
 '''imports'''
 import os
 import socket
+import subprocess
 import sys
 import time
-from subprocess import PIPE, Popen
+from datetime import datetime
 
 import apprise
 import docker
 import humanize
 from cron_descriptor import get_description
 from crontab import CronTab
+from dateutil.relativedelta import relativedelta
+
 
 def send_notification(title, message):
     '''Send apprise notification'''
@@ -25,7 +28,6 @@ def send_notification(title, message):
     notifier = apprise.Apprise()
     # Telegram notification tgram://bottoken/ChatID
     notifier.add(apprise_url)
-    print(message)
     notifier.notify(
         title=title,
         body=message
@@ -58,6 +60,52 @@ def get_folder_size(folder: str):
         size+=os.stat(ele).st_size
     return humanize.naturalsize(size, gnu=True)
 
+def get_past_date(str_days_ago):
+    '''get past date from human string'''
+    today = datetime.today()
+    splitted = str_days_ago.split()
+    if splitted[1].lower() in ['hour', 'hours', 'hr', 'hrs', 'h']:
+        date = datetime.now() - relativedelta(hours=int(splitted[0]))
+        return date.date().isoformat()
+    elif splitted[1].lower() in ['day', 'days', 'd']:
+        date = today - relativedelta(days=int(splitted[0]))
+        return date.date().isoformat()
+    elif splitted[1].lower() in ['wk', 'wks', 'week', 'weeks', 'w']:
+        date = today - relativedelta(weeks=int(splitted[0]))
+        return date.date().isoformat()
+    elif splitted[1].lower() in ['mon', 'mons', 'month', 'months', 'm']:
+        date = today - relativedelta(months=int(splitted[0]))
+        return date.date().isoformat()
+    elif splitted[1].lower() in ['yrs', 'yr', 'years', 'year', 'y']:
+        date = today - relativedelta(years=int(splitted[0]))
+        return date.date().isoformat()
+    else:
+        return "Wrong Argument format"
+
+def clean_old_backups():
+    '''remove backups older than number of units'''
+    try:
+        days_ago = os.environ['CLEANUP_OLD']
+    except:
+        print('ERROR: invalid ENV var CLEANUP_OLD, not removing old backups')
+        return
+    send_notification('Docker-Backup',f'Cleanup enabled. Removing backups older than {days_ago}')
+    for file in os.listdir('/dest'):
+        folder = os.path.join('/dest',file)
+        if os.path.isdir(folder):
+            file_as_date = datetime.fromisoformat(file)
+            past_as_date = datetime.fromisoformat(get_past_date(days_ago))
+            if file_as_date < past_as_date:
+                send_notification('Docker-Backup',\
+                    f'Removing {file} as it\'s older than {days_ago} \
+                        ({past_as_date.date().isoformat()})')
+                shell(['rm', '-rf', folder])
+
+def shell(cmd):
+    '''execute shell command'''
+    process = subprocess.Popen(cmd, universal_newlines=True)
+    process.communicate()
+
 
 def run():
     '''run backup'''
@@ -73,20 +121,14 @@ def run():
             stopped_containers.append(container)
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
-    destfolder = os.path.join('/dest',\
-                time.strftime("%d_%m_%y", time.gmtime(time.time())))
-    process = Popen(['mkdir', destfolder],stdout=PIPE, stderr=PIPE)
-    stdout, stderr = process.communicate()
-    print(stdout,stderr)
+    destfolder = os.path.join('/dest',str(datetime.today().date().isoformat()))
+    shell(['mkdir', destfolder])
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            process = Popen(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'],\
-                stdout=PIPE, stderr=PIPE)
-            stdout, stderr = process.communicate()
-            print(stdout,stderr)
+            shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
@@ -99,10 +141,8 @@ def run():
         f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
             \nBackup size: {backup_size}\
                 \nWill run {get_description(CRON_SCHEDULE)}')
-    send_notification('Docker-Backup',\
-        f'BACKUP COMPLETED in {time.strftime("%Hh%Mm%Ss", time.gmtime(elapsed))}.\
-             Will run {get_description(CRON_SCHEDULE)}')
     client.close()
+    clean_old_backups()
 
 try:
     CRON_SCHEDULE=os.environ['CRON_SCHEDULE']
