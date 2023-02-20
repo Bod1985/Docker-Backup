@@ -4,8 +4,6 @@ WORKDIR /opt/docker-backup
 
 ADD backup.py /opt/docker-backup/backup.py
 
-RUN apk update
-
 #install Python3
 RUN apk add --update python3 py3-pip
 
