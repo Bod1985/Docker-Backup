@@ -13,8 +13,9 @@ services:
     environment:
       - TZ=Europe/London
       - CRON_SCHEDULE=0 3 * * *
-      - RUN=True
-      - IGNORE_LIST=portainer
+      - RUN=True #Start backup on container creation
+      - IGNORE_LIST=portainer #Comma separated container names to leave running
+      - EXCLUDE_LIST=portainer #Comma separated folder/filepaths to exclude from backup
       - APPRISE_URL=tgram://<apikey>/<chatid>
       - CLEANUP_OLD=5 days
 volumes:

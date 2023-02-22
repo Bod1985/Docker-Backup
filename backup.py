@@ -5,6 +5,7 @@ import os
 import socket
 import subprocess
 import sys
+import tarfile
 import time
 from datetime import datetime
 
@@ -106,6 +107,11 @@ def shell(cmd):
     process = subprocess.Popen(cmd, universal_newlines=True)
     process.communicate()
 
+def tar_filter_func(tarinfo):
+    '''convert exclude list to tarfile filter'''
+    if tarinfo.name in EXCLUDE_LIST:
+        return None
+    return tarinfo
 
 def run():
     '''run backup'''
@@ -128,7 +134,8 @@ def run():
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
+            with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
+                tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)            #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
@@ -149,8 +156,11 @@ try:
     print('CRON:', get_description(CRON_SCHEDULE))
     RUN=os.environ['RUN']
     print(f'Run once: {RUN}')
-    IGNORE_LIST=f'{os.environ["IGNORE_LIST"]},{get_container_name()}'
+    IGNORE_LIST=os.environ["IGNORE_LIST"].split(',')
+    IGNORE_LIST.append(get_container_name())
     print(f'Ignore List: {IGNORE_LIST}')
+    EXCLUDE_LIST = os.environ["EXCLUDE_LIST"].split(',')
+    print(f'Exclude List: {EXCLUDE_LIST}')
 except:
     print('ERROR, missing or invalid env vars')
     exit()
