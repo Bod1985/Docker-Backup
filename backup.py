@@ -146,7 +146,7 @@ def run():
             print(f'Creating tar file at {newfile}.tar.gz')
 
             shell(['tar','--exclude={'+f'{excludeline}'+'}', '-zcvf', \
-                f'{newfile}.tar.gz',f'-C /source/{file}','.'])
+                f'{newfile}.tar.gz','-C',f'/source/{file}',f'$(ls /source/{file})'])
             #with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
             #    tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)
             # #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
