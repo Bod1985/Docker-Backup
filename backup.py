@@ -5,7 +5,7 @@ import os
 import socket
 import subprocess
 import sys
-import tarfile
+#import tarfile
 import time
 from datetime import datetime
 
@@ -129,14 +129,20 @@ def run():
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',str(datetime.today().date().isoformat()))
+    excludeline=''
+    for excluded in EXCLUDE_LIST:
+        excludeline += ' --exclude ' + excluded
+    excludeline = excludeline.lstrip()
     shell(['mkdir', destfolder])
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
-                tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)            #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
+            shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}',excludeline])
+            #with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
+            #    tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)
+            # #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
