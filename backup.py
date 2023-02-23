@@ -94,8 +94,12 @@ def clean_old_backups():
     for file in os.listdir('/dest'):
         folder = os.path.join('/dest',file)
         if os.path.isdir(folder):
-            file_as_date = datetime.fromisoformat(file)
-            past_as_date = datetime.fromisoformat(get_past_date(days_ago))
+            try:
+                file_as_date = datetime.fromisoformat(file)
+                past_as_date = datetime.fromisoformat(get_past_date(days_ago))
+            except:
+                print(f'Skipping cleanup of {file} as it doesn\'t match our date format')
+                break
             if file_as_date < past_as_date:
                 send_notification('Docker-Backup',\
                     f'Removing {file} as it\'s older than {days_ago} \
@@ -131,15 +135,17 @@ def run():
     destfolder = os.path.join('/dest',str(datetime.today().date().isoformat()))
     excludeline=''
     for excluded in EXCLUDE_LIST:
-        excludeline += ' --exclude ' + excluded
-    excludeline = excludeline.lstrip()
+        excludeline += excluded + ','
+    excludeline = excludeline[:-1]
+    print(excludeline)
     shell(['mkdir', destfolder])
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}',excludeline])
+            shell(['tar','--exclude={'+f'{excludeline}'+'}', '-zcvf', \
+                f'{newfile}.tar.gz', f'/source/{file}'])
             #with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
             #    tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)
             # #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
