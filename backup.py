@@ -110,6 +110,7 @@ def shell(cmd):
 def tar_filter_func(tarinfo):
     '''convert exclude list to tarfile filter'''
     if tarinfo.name in EXCLUDE_LIST:
+        print(f'Skipping {tarinfo.name}')
         return None
     return tarinfo
 
