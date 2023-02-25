@@ -48,7 +48,7 @@ def write_cron():
     with CronTab(user='root') as cron:
         cron.remove_all()
         job = cron.new(command=\
-            'python3 -u /opt/docker-backup/backup.py run > /proc/1/fd/1 2>/proc/1/fd/2',\
+            'python3 -u /config/backup.py run > /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
         job.setall(f'{CRON_SCHEDULE}')
         job.enable()
