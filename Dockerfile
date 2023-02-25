@@ -1,6 +1,6 @@
 FROM alpine
 
-WORKDIR /opt/docker-backup
+WORKDIR /config
 
 ADD backup.py /config/backup.py
 
