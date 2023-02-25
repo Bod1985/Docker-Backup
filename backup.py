@@ -111,13 +111,6 @@ def shell(cmd):
     process = subprocess.Popen(cmd, universal_newlines=True)
     process.communicate()
 
-def tar_filter_func(tarinfo):
-    '''convert exclude list to tarfile filter'''
-    if tarinfo.name in EXCLUDE_LIST:
-        print(f'Skipping {tarinfo.name}')
-        return None
-    return tarinfo
-
 def run():
     '''run backup'''
     send_notification('Docker-Backup','Backup starting soon...')
@@ -133,11 +126,6 @@ def run():
 
     send_notification('Docker-Backup','Containers stopped, starting backup...')
     destfolder = os.path.join('/dest',str(datetime.today().date().isoformat()))
-    excludeline=''
-    for excluded in EXCLUDE_LIST:
-        excludeline += excluded + ','
-    excludeline = excludeline[:-1]
-    print(excludeline)
     shell(['mkdir', destfolder])
     for file in os.listdir('/source'):
         folder = os.path.join('/source',file)
@@ -145,7 +133,7 @@ def run():
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
 
-            shell(['tar','--exclude={'+f'{excludeline}'+'}', '-zcvf', \
+            shell(['tar','--exclude-from=/config/exclude_file.txt', '-zcvf', \
                 f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
             #with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
             #    tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)
@@ -173,8 +161,6 @@ try:
     IGNORE_LIST=os.environ["IGNORE_LIST"].split(',')
     IGNORE_LIST.append(get_container_name())
     print(f'Ignore List: {IGNORE_LIST}')
-    EXCLUDE_LIST = os.environ["EXCLUDE_LIST"].split(',')
-    print(f'Exclude List: {EXCLUDE_LIST}')
 except:
     print('ERROR, missing or invalid env vars')
     exit()
