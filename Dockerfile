@@ -2,7 +2,7 @@ FROM alpine
 
 WORKDIR /config
 
-ADD backup.py /config/backup.py
+ADD backup.py /config
 
 #install Python3
 RUN apk add --update python3 py3-pip
