@@ -5,6 +5,7 @@ import os
 import socket
 import subprocess
 import sys
+#import tarfile
 import time
 from datetime import datetime
 
@@ -47,7 +48,7 @@ def write_cron():
     with CronTab(user='root') as cron:
         cron.remove_all()
         job = cron.new(command=\
-            'python3 -u /opt/docker-backup/backup.py run > /proc/1/fd/1 2>/proc/1/fd/2',\
+            'python3 -u /app/backup.py run > /proc/1/fd/1 2>/proc/1/fd/2',\
                 comment='docker-backup')
         job.setall(f'{CRON_SCHEDULE}')
         job.enable()
@@ -93,8 +94,12 @@ def clean_old_backups():
     for file in os.listdir('/dest'):
         folder = os.path.join('/dest',file)
         if os.path.isdir(folder):
-            file_as_date = datetime.fromisoformat(file)
-            past_as_date = datetime.fromisoformat(get_past_date(days_ago))
+            try:
+                file_as_date = datetime.fromisoformat(file)
+                past_as_date = datetime.fromisoformat(get_past_date(days_ago))
+            except:
+                print(f'Skipping cleanup of {file} as it doesn\'t match our date format')
+                break
             if file_as_date < past_as_date:
                 send_notification('Docker-Backup',\
                     f'Removing {file} as it\'s older than {days_ago} \
@@ -105,7 +110,6 @@ def shell(cmd):
     '''execute shell command'''
     process = subprocess.Popen(cmd, universal_newlines=True)
     process.communicate()
-
 
 def run():
     '''run backup'''
@@ -128,7 +132,16 @@ def run():
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
             print(f'Creating tar file at {newfile}.tar.gz')
-            shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
+            if os.path.exists('/config/exclude_file.txt'):
+                shell(['tar','--exclude-from=/config/exclude_file.txt', '-zcvf', \
+                    f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
+            else:
+                print('No exclude file found, including everything')
+                shell(['tar', '-zcvf', \
+                    f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
+            #with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
+            #    tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)
+            # #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
@@ -149,7 +162,8 @@ try:
     print('CRON:', get_description(CRON_SCHEDULE))
     RUN=os.environ['RUN']
     print(f'Run once: {RUN}')
-    IGNORE_LIST=f'{os.environ["IGNORE_LIST"]},{get_container_name()}'
+    IGNORE_LIST=os.environ["IGNORE_LIST"].split(',')
+    IGNORE_LIST.append(get_container_name())
     print(f'Ignore List: {IGNORE_LIST}')
 except:
     print('ERROR, missing or invalid env vars')

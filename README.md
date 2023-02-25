@@ -45,6 +45,10 @@ volumes:
 ```APPRISE_URL``` (string) defines apprise url for notifications - see https://github.com/caronc/apprise/wiki for more info
 
 
-### 3. Bring up the container
+### 3. Exclude folders/files/patterns
+
+Put exclude_file.txt in the config directory and amend, formatting as per https://www.gnu.org/software/tar/manual/html_node/exclude.html
+
+### 4. Bring up the container
 
 ```sudo docker-compose up -d```
