@@ -47,7 +47,7 @@ volumes:
 
 ### 3. Exclude folders/files/patterns
 
-Edit exclude_file.txt in the config directory as per https://www.gnu.org/software/tar/manual/html_node/exclude.html
+Put exclude_file.txt in the config directory and amend, formatting as per https://www.gnu.org/software/tar/manual/html_node/exclude.html
 
 ### 4. Bring up the container
 

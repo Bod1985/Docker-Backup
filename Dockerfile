@@ -1,8 +1,8 @@
 FROM alpine
 
-WORKDIR /config
+WORKDIR /app
 
-ADD backup.py /config
+ADD backup.py /app
 
 #install Python3
 RUN apk add --update python3 py3-pip
@@ -12,7 +12,7 @@ RUN pip3 install docker python-crontab apprise cron-descriptor humanize
 ENV CRON_SCHEDULE="0 3 * * *"
 ENV RUN="False"
 
-CMD crond && python3 -u -i /config/backup.py
+CMD crond && python3 -u -i /app/backup.py
 
 #The following is from https://www.devopsforit.com/posts/anatomy-of-a-dockerfile-build-a-docker-image
 
