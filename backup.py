@@ -147,6 +147,20 @@ def run():
     for container in stopped_containers:
         print(f'Restarting {container.name}')
         container.start()
+
+    time.sleep(5)
+    
+    # Check container status after restart
+    for container in client.containers.list():
+        if container.name not in IGNORE_LIST:
+            container.reload()
+            if container.status != 'running':
+                send_notification('Docker-Backup', f'Container {container.name} is not running, attempting to start...')
+                try:
+                    container.start()
+                except Exception as e:
+                    send_notification('Docker-Backup', f'Failed to start container {container.name}: {str(e)}')
+
     end = time.time()
     elapsed = end - start
     backup_size = get_folder_size(destfolder)
