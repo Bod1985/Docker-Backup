@@ -99,7 +99,7 @@ def clean_old_backups():
                 past_as_date = datetime.fromisoformat(get_past_date(days_ago))
             except:
                 print(f'Skipping cleanup of {file} as it doesn\'t match our date format')
-                break
+                continue
             if file_as_date < past_as_date:
                 send_notification('Docker-Backup',\
                     f'Removing {file} as it\'s older than {days_ago} \
