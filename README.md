@@ -2,6 +2,8 @@
 
 A dockerised python script/cron job solution for backing up running Docker containers.
 
+***THIS COMES WITH NO SUPPORT AND IS NOT A FINISHED PRODUCT***
+
 ## Installation
 
 Use the provided docker-compose.yml file
