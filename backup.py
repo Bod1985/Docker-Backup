@@ -131,17 +131,19 @@ def run():
         folder = os.path.join('/source',file)
         if os.path.isdir(folder):
             newfile = os.path.join(destfolder, file)
-            print(f'Creating tar file at {newfile}.tar.gz')
-            if os.path.exists('/config/exclude_file.txt'):
-                shell(['tar','--exclude-from=/config/exclude_file.txt', '-zcvf', \
-                    f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
-            else:
-                print('No exclude file found, including everything')
-                shell(['tar', '-zcvf', \
-                    f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
-            #with tarfile.open(f'{newfile}.tar.gz', mode='w:gz') as tar_file:
-            #    tar_file.add(f'/source/{file}', recursive=True, filter=tar_filter_func)
-            # #shell(['tar', '-zcvf', f'{newfile}.tar.gz', f'/source/{file}'])
+
+            if MODE == 'tar':
+                print(f'Creating tar file at {newfile}.tar.gz')
+                if os.path.exists('/config/exclude_file.txt'):
+                    shell(['tar','--exclude-from=/config/exclude_file.txt', '-zcvf', \
+                        f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
+                else:
+                    print('No exclude file found, including everything')
+                    shell(['tar', '-zcvf', \
+                        f'{newfile}.tar.gz','-C',f'/source/{file}','.'])
+            elif MODE == 'rsync': #doesn't support excluded folders yet
+                print(f'Rsyncing to {newfile}, doesn\'t support excludes yet')
+                shell(['rsync', '--recursive','--progress','--human-readable', '/source/', destfolder])
 
     send_notification('Docker-Backup','Tar creation complete, restarting containers...')
     for container in stopped_containers:
@@ -179,6 +181,7 @@ try:
     IGNORE_LIST=os.environ["IGNORE_LIST"].split(',')
     IGNORE_LIST.append(get_container_name())
     print(f'Ignore List: {IGNORE_LIST}')
+    MODE=os.environ["MODE"]
 except:
     print('ERROR, missing or invalid env vars')
     exit()
