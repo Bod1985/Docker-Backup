@@ -11,6 +11,7 @@ RUN pip3 install docker python-crontab apprise cron-descriptor humanize
 
 ENV CRON_SCHEDULE="0 3 * * *"
 ENV RUN="False"
+ENV MODE="tar"
 
 CMD crond && python3 -u -i /app/backup.py
 

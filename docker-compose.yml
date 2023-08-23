@@ -14,6 +14,7 @@ services:
       - TZ=Europe/London
       - CRON_SCHEDULE=0 3 * * *
       - RUN=True #Start backup on container creation
+      - MODE=tar #
       - IGNORE_LIST=portainer #Comma separated container names to leave running
       - EXCLUDE_LIST=portainer #Comma separated folder/filepaths to exclude from backup
       - APPRISE_URL=tgram://<apikey>/<chatid>
