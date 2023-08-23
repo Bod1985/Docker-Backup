@@ -5,7 +5,7 @@ WORKDIR /app
 ADD backup.py /app
 
 #install Python3
-RUN apk add --update python3 py3-pip
+RUN apk add --update python3 py3-pip rsync
 
 RUN pip3 install docker python-crontab apprise cron-descriptor humanize
 
